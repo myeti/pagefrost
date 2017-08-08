@@ -16,11 +16,17 @@ npm install pagefrost
 grunt.initConfig({
 	pagefrost: {
 		target: {
-			data: 'src/site.json',
-			pages: 'src/pages',
-			layouts: 'src/layouts',
-			partials: 'src/partials',
-			helpers: 'src/helpers',
+			data: 'src/data.json',
+			options: {
+				base_url: '/',
+				rewrite: false
+			},
+			src: {
+				pages: 'src/pages',
+				layouts: 'src/layouts',
+				partials: 'src/partials',
+				helpers: 'src/helpers'
+			},
 			dest: 'dist'
 		}
 	}
@@ -31,21 +37,29 @@ grunt.loadNpmTasks('pagefrost')
 
 ### `target.data`
 
-Global data injected in all templates, can be either a json file or an object, default `{}`.
+Global data injected in all templates, can be either a `.json` file, a `.yml` file, a `.js` file or an object, default `{}`.
 
-### `target.pages`
+### `target.options.base_url`
+
+Base url added to url when using `url` helper.
+
+### `target.options.rewrite`
+
+If `true`, create `.htaccess` and remove `.html` in url.
+
+### `target.src.pages`
 
 Path folder where templates are located, default `src/pages`.
 
-### `target.layouts`
+### `target.src.layouts`
 
 Path folder where layouts are located, default `src/layouts`.
 
-### `target.partials`
+### `target.src.partials`
 
 Path folder where partials are located, default `src/partials`.
 
-### `target.helpers`
+### `target.src.helpers`
 
 Path folder where javascript helpers are located, default `src/helpers`.
 The file loaded must be a factory to generate the helper:
@@ -143,7 +157,7 @@ Hey I'm a blog post :)
 ### Runtime vars
 
 PageFrost will provide some runtime data, prefixed with `$`:
-- `$page` current explosed page data (`id`, `url`, `dest`, `tag`, `meta`)
+- `$page` current explosed page data (`id`, `url`, `dest`, `tag`, `data`)
 - `$pages` all exposesd pages
 - `$tags` all exposesd tags
 
