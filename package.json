@@ -1,0 +1,22 @@
+{
+  "name": "pagefrost",
+  "version": "1.0.0",
+  "description": "Render Handlebars and Markdown templates with front-matter metadata",
+  "main": "src/pagefrost.js",
+  "repository": "https://github.com/myeti/pagefrost.git",
+  "keywords": [
+    "handlebars",
+    "markdown",
+    "frontmatter",
+    "static site"
+  ],
+  "author": "Aymeric Assier <aymeric.assier@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "front-matter": "^2.1.2",
+    "handlebars": "^4.0.10",
+    "markdown": "^0.5.0",
+    "lodash": "^4.17.4",
+    "js-beautify": "^1.6.14"
+  }
+}
