@@ -17,13 +17,15 @@ class PageFrost {
 	 * @param {String} dest
 	 * @param {Object} data
 	 * @param {Object} options {base_url, rewrite_url}
+	 * @param {Function} log
 	 */
-	constructor(src, dest, data, options) {
+	constructor(src, dest, data, options, log) {
 
 		this.src = src
 		this.dest = dest
 		this.data = data
 		this.options = options
+		this.log = log || console.log
 
 		this.layouts = {}
 		this.pages = {}
@@ -64,6 +66,7 @@ class PageFrost {
 		const name = path.basename(helper).replace('.js', '') // 'folder/helper-name.js -> 'helper-name'
 		const factory = require(`${folder}/${helper}`)
 		Handlebars.registerHelper(name, factory(Handlebars, this.options))
+		this.log(`Register helper '${name}'`)
 	}
 
 
@@ -86,7 +89,8 @@ class PageFrost {
 	registerPartial(folder, partial) {
 		const name = partial.replace('.html', '') // 'foo/bar.html' -> {{> foo/bar}}
 		const content = fs.readFileSync(`${folder}/${partial}`)
-		Handlebars.registerPartial(name, content)
+		Handlebars.registerPartial(name, content.toString())
+		this.log(`Register partial '${name}'`)
 	}
 
 
@@ -109,6 +113,7 @@ class PageFrost {
 
 			// add to layouts list
 			this.layouts[parsed.id] = parsed
+			this.log(`Parse layout '${this.src.layouts}/${layout}' as '${parsed.id}'`)
 		})
 	}
 
@@ -139,6 +144,7 @@ class PageFrost {
 
 			// add to pages list
 			this.pages[parsed.id] = parsed
+			this.log(`Parse page '${this.src.pages}/${template}' as '${parsed.id}'`)
 
 			// add to published pages list
 			if(parsed.publish) {
@@ -162,16 +168,17 @@ class PageFrost {
 	buildPages() {
 
 		// reset stats
-		let built = 0
-		let ignored = 0
+		let published = 0
+		let unpublished = 0
 
 		// build all published pages
 		_.each(this.pages, page => {
 
 			// delete unpublished file
 			if(!page.publish) {
-				ignored++
 				fs.unlinkSync(`${this.dest}/${page.dest}`)
+				this.log(`Unpublish '${page.id}'`)
+				unpublished++
 				return;
 			}
 
@@ -187,10 +194,12 @@ class PageFrost {
 
 			// write down page
 			fs.writeFileSync(`${this.dest}/${page.dest}`, html)
-			built++
+			this.log(`Publish '${page.id}' -> '${this.dest}/${page.dest}'`)
+
+			published++
 		})
 
-		return {built, ignored}
+		this.log(`Pages rendered: ${published} published, ${unpublished} unpublished`)
 	}
 
 
@@ -208,7 +217,8 @@ class PageFrost {
 		})
 
 		// write file
-		return fs.writeFileSync(`${this.dest}/.htaccess`, htaccess.join("\n"))
+		fs.writeFileSync(`${this.dest}/.htaccess`, htaccess.join("\n"))
+		this.log(`Generate htaccess -> '${this.dest}/.htaccess'`)
 	}
 
 
@@ -233,12 +243,10 @@ class PageFrost {
 		this.parseTemplates(templates)
 
 		// build pages
-		const stats =  this.buildPages()
+		this.buildPages()
 
 		// write htaccess
 		if(this.options.rewrite_url) this.writeHtaccess()
-
-		return stats
 	}
 
 

@@ -50,16 +50,8 @@ module.exports = function(grunt) {
 
 		// create pagefrost instance and run task
 		try {
-
-			// create pagefrost instance
-			const pagefrost = new PageFrost(config.src, config.dest, config.data, config.options)
-
-			// run task
-			const {built, ignored} = pagefrost.proceed(templates, layouts, partials, helpers)
-
-			// show logs
-			_.each(pagefrost.pages, page => grunt.log.ok(`Page '${config.dest}/${page.dest}' published`))
-			grunt.log.ok(`${built} file published, ${ignored} ignored`)
+			const pagefrost = new PageFrost(config.src, config.dest, config.data, config.options, grunt.log.ok)
+			pagefrost.proceed(templates, layouts, partials, helpers)
 		}
 		catch(error) {
 			grunt.fail.warn(error)
