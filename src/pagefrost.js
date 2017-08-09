@@ -16,7 +16,7 @@ class PageFrost {
 	 * @param {Object} src {templates, layouts, partials, helpers}
 	 * @param {String} dest
 	 * @param {Object} data
-	 * @param {Object} options
+	 * @param {Object} options {base_url, rewrite_url}
 	 */
 	constructor(src, dest, data, options) {
 
@@ -132,8 +132,8 @@ class PageFrost {
 			const parsed = Parser.parse(this.src.pages, template)
 			if(this.pages[parsed.id]) throw `Page id '${parsed.id}' is already taken`
 
-			// apply url rewrite rule
-			if(this.options.rewrite) {
+			// apply rewrite url rule
+			if(this.options.rewrite_url) {
 				parsed.url = parsed.url.replace(parsed.ext, '')
 			}
 
@@ -236,7 +236,7 @@ class PageFrost {
 		const stats =  this.buildPages()
 
 		// write htaccess
-		if(this.options.rewrite) this.writeHtaccess()
+		if(this.options.rewrite_url) this.writeHtaccess()
 
 		return stats
 	}

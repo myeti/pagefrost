@@ -41,38 +41,40 @@ Global data injected in all templates, can be either a `.json` file, a `.yml` fi
 
 ### `target.options.base_url`
 
-Base url added to url when using `url` helper.
+Base url used by the `url` helper.
 
 ### `target.options.rewrite`
 
-If `true`, create `.htaccess` and remove `.html` in url.
+If `true`, create `.htaccess` and remove `.html` extension in url helper.
 
 ### `target.src.pages`
 
-Path folder where templates are located, default `src/pages`.
+Folder where templates are located, default `src/pages`.
 
 ### `target.src.layouts`
 
-Path folder where layouts are located, default `src/layouts`.
+Folder where layouts are located, default `src/layouts`.
 
 ### `target.src.partials`
 
-Path folder where partials are located, default `src/partials`.
+Folder where partials are located, default `src/partials`.
 
 ### `target.src.helpers`
 
-Path folder where javascript helpers are located, default `src/helpers`.
-The file loaded must be a factory to generate the helper:
+Folder where js helpers are located, default `src/helpers`.
+The file loaded must be a factory generating the helper:
 
 ```js
-module.exports = function(Handlebars) {
-	return function() { /* do something here */ }
+module.exports = (Handlebars, options) => {
+	return () => {
+		/* do something here */
+	}
 }
 ```
 
 ### `target.dest`
 
-Path folder where compiled pages will be written, default `dist`.
+Folder where compiled pages will be written, default `dist`.
 
 
 ## Usage
@@ -81,7 +83,7 @@ PageFrost will render all templates located in `src/pages` to `dist`, these temp
 
 ### Front-matter
 
-All templates are enhanced with the front-matter metadata feature and can define custom vars :
+All templates are enhanced with the front-matter parsing and can define custom vars :
 
 `src/pages/index.html`
 ```html
@@ -92,14 +94,14 @@ name: John
 Ho, hello {{name}} !
 ```
 
-...will render `dist/index.html`
+`dist/index.html`
 ```html
 Ho, hello John !
 ```
 
 ### Layout
 
-Layout file can be defined in metadata (ex. `default`, located in `src/layouts`):
+Layout file can be defined in vars (ex. `default`, located in `src/layouts`):
 
 `src/pages/index.html`
 ```html
@@ -111,19 +113,19 @@ name: John
 Ho, hello {{name}} !
 ```
 
-with `src/layouts/default.html`
+`src/layouts/default.html`
 ```html
 <h1>{{{$body}}}</h1>
 ```
 
-...will render `dist/index.html`
+`dist/index.html`
 ```html
 <h1>Ho, hello John !</h1>
 ```
 
 ### Publish state
 
-You can choose to exclude a file from rendering by setting the `publish` metadata to `false`:
+You can choose to exclude a file from rendering by setting the `publish` var to `false`:
 
 ```html
 ---
@@ -133,7 +135,7 @@ publish: false
 
 ### Tags
 
-You can tag a template and find it in the `$tags` collectionm this act as a category
+You can tag a template and find it in the `$tags` collection, this act as a category:
 
 `src/blog/note-1.html`
 ```html
@@ -149,7 +151,7 @@ Hey I'm a blog post :)
 <h1>Blog:</h2>
 <ul>
 {{#each $tags.blog}}
-<li>- {{this.file}}</li> <!-- blog/note-1.html -->
+<li>- {{this.url}}</li> <!-- blog/note-1.html -->
 {{/each}}
 </ul>
 ```

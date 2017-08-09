@@ -7,13 +7,15 @@ module.exports = function(grunt) {
 
 	grunt.registerMultiTask(pkg.name, pkg.description, function(){
 
+		// resolve root folder
+		const root = process.cwd()
+
 		// load config
 		const config = _.merge({
-			root: process.cwd(),
 			data: {},
 			options: {
-				baseurl: '',
-				rewrite: false
+				base_url: '',
+				rewrite_url: false
 			},
 			src: {
 				pages: 'src/pages',
@@ -25,7 +27,7 @@ module.exports = function(grunt) {
 		}, this.data)
 
 		// resolve helpers path
-		config.src.helpers = `${config.root}/${config.src.helpers}`
+		config.src.helpers = `${root}/${config.src.helpers}`
 
 		// load global data file
 		if(typeof this.data.data == 'string') {
@@ -36,7 +38,7 @@ module.exports = function(grunt) {
 				const ext = path.extname(this.data.data)
 				if(ext == '.yml') config.data = grunt.file.readYAML(this.data.data)
 				if(ext == '.json') config.data = grunt.file.readJSON(this.data.data)
-				if(ext == '.js') config.data = require(`${config.root}/${this.data.data}`)
+				if(ext == '.js') config.data = require(`${root}/${this.data.data}`)
 			}
 		}
 
