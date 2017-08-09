@@ -1,6 +1,6 @@
 {
   "name": "pagefrost",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Render Handlebars and Markdown templates with front-matter metadata",
   "main": "src/pagefrost.js",
   "repository": "https://github.com/myeti/pagefrost.git",
