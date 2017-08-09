@@ -19,7 +19,7 @@ grunt.initConfig({
 			data: 'src/data.json',
 			options: {
 				base_url: '/',
-				rewrite: false
+				rewrite_url: false
 			},
 			src: {
 				pages: 'src/pages',
@@ -43,9 +43,9 @@ Global data injected in all templates, can be either a `.json` file, a `.yml` fi
 
 Base url used by the `url` helper.
 
-### `target.options.rewrite`
+### `target.options.rewrite_url`
 
-If `true`, create `.htaccess` and remove `.html` extension in url helper.
+If `true`, create `.htaccess` and remove `.html` extension in `url` helper.
 
 ### `target.src.pages`
 
@@ -158,10 +158,20 @@ Hey I'm a blog post :)
 
 ### Runtime vars
 
-PageFrost will provide some runtime data, prefixed with `$`:
-- `$page` current explosed page data (`id`, `url`, `dest`, `tag`, `data`)
-- `$pages` all exposesd pages
-- `$tags` all exposesd tags
+PageFrost will provide some runtime data:
+- `$page` current published page (`id`, `url`, `tag`, `data`)
+- `$pages` all published pages
+- `$tags` all published tags
 
+### Built-in helpers
+
+PageFrost comes with built-in helpers:
+- `url` use `base_url` to generate valid url: `{{url 'foo/bar.html'}} -> 'http://www.base.url/foo/bar.html'`
+- `loop` iterate over a collection sorted by property:
+```html
+{{#loop $tags.blog 'date'}}
+	{{this.title}}
+{{/loop}}
+```
 
 ## :)
