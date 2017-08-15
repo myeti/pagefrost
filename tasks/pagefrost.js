@@ -7,11 +7,9 @@ module.exports = function(grunt) {
 
 	grunt.registerMultiTask(pkg.name, pkg.description, function(){
 
-		// resolve root folder
-		const root = process.cwd()
-
-		// load config
+		// load site config
 		const config = _.merge({
+			root: process.cwd(), // resolve root folder
 			data: {},
 			options: {
 				base_url: '',
@@ -26,9 +24,6 @@ module.exports = function(grunt) {
 			dest: 'dist'
 		}, this.data)
 
-		// resolve helpers path
-		config.src.helpers = `${root}/${config.src.helpers}`
-
 		// load global data file
 		if(typeof this.data.data == 'string') {
 			if(!grunt.file.exists(this.data.data)) {
@@ -38,20 +33,21 @@ module.exports = function(grunt) {
 				const ext = path.extname(this.data.data)
 				if(ext == '.yml') config.data = grunt.file.readYAML(this.data.data)
 				if(ext == '.json') config.data = grunt.file.readJSON(this.data.data)
-				if(ext == '.js') config.data = require(`${root}/${this.data.data}`)
+				if(ext == '.js') config.data = require(`${config.root}/${this.data.data}`)
 			}
 		}
 
-		// aggregate files
-		const templates = grunt.file.expand({cwd: config.src.pages}, ['**/*.html', '**/*.md'])
-		const layouts = grunt.file.expand({cwd: config.src.layouts}, ['**/*.html'])
-		const partials = grunt.file.expand({cwd: config.src.partials}, ['**/*.html'])
-		const helpers = grunt.file.expand({cwd: config.src.helpers}, ['*.js'])
+		// load template lists
+		const templates = {
+			pages: grunt.file.expand({cwd: config.src.pages}, ['**/*.html', '**/*.md']).sort(),
+			layouts: grunt.file.expand({cwd: config.src.layouts}, ['**/*.html']).sort(),
+			partials: grunt.file.expand({cwd: config.src.partials}, ['**/*.html']).sort(),
+			helpers: grunt.file.expand({cwd: config.src.helpers}, ['*.js']).sort()
+		}
 
 		// create pagefrost instance and run task
 		try {
-			const pagefrost = new PageFrost(config.src, config.dest, config.data, config.options, grunt.log.ok)
-			pagefrost.proceed(templates, layouts, partials, helpers)
+			PageFrost.run(templates, config, grunt.log.ok)
 		}
 		catch(error) {
 			grunt.fail.warn(error)

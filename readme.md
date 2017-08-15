@@ -1,4 +1,4 @@
-# PageFrost 1.0.2
+# PageFrost 1.1.0
 
 Grunt task to render Handlebars and Markdown templates using front-matter metadata.
 
@@ -66,7 +66,7 @@ The file loaded must be a factory generating the helper:
 
 ```js
 module.exports = (Handlebars, options) => {
-	return () => {
+	return (input) => {
 		/* do something here */
 	}
 }
@@ -133,14 +133,14 @@ publish: false
 ---
 ```
 
-### Tags
+### Collections
 
-You can tag a template and find it in the `$tags` collection, this act as a category:
+You can categorize a template and find it in the `$collections`, this act as a category:
 
 `src/blog/note-1.html`
 ```html
 ---
-tag: blog
+collection: blog
 ---
 
 Hey I'm a blog post :)
@@ -150,7 +150,7 @@ Hey I'm a blog post :)
 ```html
 <h1>Blog:</h2>
 <ul>
-{{#each $tags.blog}}
+{{#each $collections.blog}}
 <li>- {{this.url}}</li> <!-- blog/note-1.html -->
 {{/each}}
 </ul>
@@ -159,9 +159,11 @@ Hey I'm a blog post :)
 ### Runtime vars
 
 PageFrost will provide some runtime data:
-- `$page` current published page (`id`, `url`, `tag`, `data`)
+- `id` current page's id
+- `url` current page's url
+- `$meta` current page's metadata (`src`, `dest`, `ext`, `type`...)
 - `$pages` all published pages
-- `$tags` all published tags
+- `$collections` all collections
 
 ### Built-in helpers
 
@@ -169,7 +171,7 @@ PageFrost comes with built-in helpers:
 - `url` use `base_url` to generate valid url: `{{url 'foo/bar.html'}} -> 'http://www.base.url/foo/bar.html'`
 - `loop` iterate over a collection sorted by property:
 ```html
-{{#loop $tags.blog 'date'}}
+{{#loop $collections.blog 'date'}}
 	{{this.title}}
 {{/loop}}
 ```

@@ -20,16 +20,22 @@ class Parser {
 		if(!fs.existsSync(filepath)) throw `Template '${filepath}' does not exist`
 
 		// read template content and parse front matter
-		const content = fs.readFileSync(filepath).toString()
-		const meta = new FrontMatter(content)
+		const fm = Parser.frontmatter(filepath)
 
 		// resolve page attributes
-		const page = Parser.resolve(template, meta)
+		return Parser.resolve(template, fm.attributes, fm.body)
+	}
 
-		// clean body
-		page.body = meta.body.trim()
 
-		return page
+	/**
+	 * Read front-matter metadata
+	 * 
+	 * @param {String} filepath
+	 * @return {Object} 
+	 */
+	static frontmatter(filepath) {
+		const content = fs.readFileSync(filepath).toString()
+		return new FrontMatter(content)
 	}
 
 
@@ -37,39 +43,69 @@ class Parser {
 	 * Resolve page attributes from front-matter
 	 *
 	 * @param {String} template
-	 * @param {Object} meta
+	 * @param {Object} attrs
 	 * @return {Object}
 	 */
-	static resolve(template, meta) {
+	static resolve(template, attrs, body) {
+		return {
+			data: Parser.mergeVars(attrs),
+			meta: Parser.resolveMeta(attrs, template),
+			body: Parser.cleanBody(body)
+		}
+	}
 
-		// prepare page object
-		const page = {}
 
-		// resolve path
-		page.src = template
-		page.dest = template.replace('.md', '.html') // 'foo/bar.md' -> 'foo/bar.html'
-		page.url = page.dest // alias
+	/**
+	 * Merge vars
+	 * 
+	 * @param {Object} attrs 
+	 * @return {Object}
+	 */
+	static mergeVars(attrs) {
 
-		// resolve type
-		page.ext = path.extname(template) // 'foo/bar.md' -> '.md'
-		page.type = (page.ext === '.md') ? 'markdown' : 'html'
+		const data = {}
 
-		// resolve id
-		page.id = meta.attributes.id || template.replace(page.ext, '').replace('/', '_') // 'foo/bar.md' -> 'foo_bar'
-
-		// resolve layout, tag and publish state
-		page.layout = meta.attributes.layout
-		page.tag = meta.attributes.tag
-		page.publish = !(meta.attributes.publish === false)
-
-		// build meta (dot notation, allow `foo.bar` as foo{bar})
-		page.data = {}
-		_.each(meta.attributes, (value, attr) => {
-			if(typeof value == 'object') _.merge(page.data[attr], value)
-			else _.set(page.data, attr, value)
+		_.each(attrs, (value, attr) => {
+			if(typeof value == 'object') _.merge(data[attr], value) // recursively merge object
+			else _.set(data, attr, value) // dot notation: 'foo.bar' -> foo: { bar }
 		})
 
-		return page
+		return data
+	}
+
+
+	/**
+	 * Resolve meta data
+	 * 
+	 * @param {Object} attrs 
+	 * @param {String} template 
+	 * @return {Object}
+	 */
+	static resolveMeta(attrs, template) {
+
+		const meta = {}
+
+		meta.src = template // 'foo/bar.md'
+		meta.dest = template.replace('.md', '.html') // 'foo/bar.md' -> 'foo/bar.html'
+		meta.ext = path.extname(template) // 'foo/bar.md' -> '.md'
+		meta.id = attrs.id || template.replace(meta.ext, '').replace('/', '_') // 'foo/bar.md' -> 'foo_bar'
+		meta.type = (meta.ext === '.md') ? 'markdown' : 'html'
+		meta.layout = attrs.layout
+		meta.category = attrs.category
+		meta.publish = !(attrs.publish === false)
+
+		return meta
+	}
+
+
+	/**
+	 * Sanitize body
+	 * 
+	 * @param {String} body 
+	 * @return {String}
+	 */
+	static cleanBody(body) {
+		return body.trim()
 	}
 
 

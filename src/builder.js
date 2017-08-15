@@ -11,36 +11,72 @@ class Builder {
 	 * Build a page with its layouts
 	 *
 	 * @param {Object} page
-	 * @param {Object} data
 	 * @param {Object} layouts
+	 * @param {Object} preVars
+	 * @param {Object} postVars
 	 * @return {String}
 	 */
-	static build(page, data, layouts) {
+	static build(page, layouts, preVars, postVars) {
 
-		// prepare layers to build
-		const layers = [page]
-		const layersData = [page.data]
-
-		let nextLayer = page.layout
-		while(nextLayer) {
-			const layer = layouts[nextLayer]
-			layers.push(layer)
-			layersData.push(layer.data)
-			nextLayer = layer.layout
-		}
+		// compose layers to build
+		const {layers, vars} = Builder.compose(page, layouts)
 
 		// prepare final vars
-		const vars = _.merge({}, data, ...layersData.reverse())
+		const finalVars = _.merge({}, preVars, vars, postVars)
 
 		// build body for each layers
-		let body = null
-		layers.forEach(layer => {
-			const layerVars = _.merge({}, vars, {$body: body})
-			body = Builder.compile(layer, layerVars)
-		})
+		const body = Builder.compile(layers, finalVars)
 
 		// beautify html
 		return Builder.beautify(body)
+	}
+
+
+	/**
+	 * Compose layers
+	 * 
+	 * @param {Object} page
+	 * @param {Object} layouts
+	 * @return {Object}
+	 */
+	static compose(page, layouts) {
+
+		// add page as first layer
+		const layers = [page]
+		const layersVars = [page.data]
+
+		// add layouts to layers
+		let nextLayout = page.meta.layout
+		while(nextLayout) {
+			const layout = layouts[nextLayout]
+			layers.push(layout)
+			layersVars.push(layout.data)
+			nextLayout = layout.meta.layout
+		}
+
+		// merge data
+		const vars = _.merge({}, ...layersVars.reverse())
+
+		return {layers, vars}
+	}
+
+
+	/**
+	 * Compile all layers
+	 * 
+	 * @param {Array} layers 
+	 * @param {Object} vars 
+	 * @return {String}
+	 */
+	static compile(layers, vars) {
+
+		let body = null
+		layers.forEach(layer => {
+			const layerVars = _.merge({}, vars, {$body: body})
+			body = Builder.render(layer, layerVars)
+		})
+
+		return body
 	}
 
 
@@ -51,9 +87,11 @@ class Builder {
 	 * @param {Object} vars
 	 * @return {String}
 	 */
-	static compile(page, vars) {
-		let body = Handlebars.compile(page.body)(vars)
-		if(page.type == 'markdown') body = Markdown.toHTML(body)
+	static render(page, vars) {
+
+		let body = Handlebars.compile(page.body)(vars) // render handlebars
+		if(page.meta.type == 'markdown') body = Markdown.toHTML(body) // rendere markdown
+
 		return body
 	}
 
