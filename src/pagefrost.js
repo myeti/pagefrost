@@ -254,6 +254,10 @@ class PageFrost {
 			}
 		})
 
+		// default 404 page : 404.html
+		htaccess.push('')
+		htaccess.push('ErrorDocument 404 404.html')
+
 		// write file
 		fs.writeFileSync(`${this.dest}/.htaccess`, htaccess.join("\n"))
 		this.log(`Generate htaccess -> '${this.dest}/.htaccess'`)
