@@ -1,4 +1,4 @@
-# PageFrost 1.1.0
+# PageFrost 1.1.1
 
 Grunt task to render Handlebars and Markdown templates using front-matter metadata.
 
